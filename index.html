@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Branches KPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef3f2; --surface:#fff; --ink:#10282a; --muted:#5d7270; --line:#d5e0de;
+  --brand:#0f6b66; --good:#1f8a5b; --warn:#b97c12; --bad:#c6443a;
+  --good-bg:#e3f3ea; --warn-bg:#fbf0d9; --bad-bg:#f9e3e0;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0e1b1c; --surface:#152627; --ink:#e6f0ee; --muted:#8fa8a5; --line:#264042;
+  --brand:#4cc3b9; --good:#4cc790; --warn:#e0b04a; --bad:#ef7d72;
+  --good-bg:#183a2b; --warn-bg:#3b3016; --bad-bg:#40201d;}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;font-weight:600;margin:0}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.sub{color:var(--muted);font-size:13px}
+.back{display:inline-block;margin-bottom:6px;color:var(--brand);text-decoration:none;font-weight:500;font-size:14px}
+.back:hover{text-decoration:underline}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.filters label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:3px}
+input[type=date]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--brand)}
+button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.spacer{flex:1}
+.banner{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:13px}
+
+/* KPI strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.strip .k{padding:14px 16px;border-inline-start:1px solid var(--line)}
+.strip .k:first-child{border-inline-start:0}
+.k .l{font-size:13px;color:var(--muted)}
+.k .v{font-size:26px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.k .p{font-size:13px;font-variant-numeric:tabular-nums}
+.g{color:var(--good)} .w{color:var(--warn)} .b{color:var(--bad)}
+
+/* table */
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:12px 14px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th{font-weight:500;font-size:13px;color:var(--muted);background:transparent}
+th button{all:unset;cursor:pointer}
+th button:hover{color:var(--brand)}
+th button:focus-visible{outline:2px solid var(--brand)}
+tbody tr.row{cursor:pointer}
+tbody tr.row:hover{background:var(--bg)}
+td.name{font-weight:500}
+td.name small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.cell .n{font-variant-numeric:tabular-nums;font-weight:500}
+.cell .pc{font-size:12px;font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:5px;width:120px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px}
+.bg-g{background:var(--good)} .bg-w{background:var(--warn)} .bg-b{background:var(--bad)}
+td.num{font-variant-numeric:tabular-nums}
+
+/* detail */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.tabs button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:#fff}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.panel h2{font-size:15px;font-weight:600;margin:0 0 8px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+.legend{font-size:12px;color:var(--muted);margin-top:6px}
+.foot{margin-top:14px;font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+@media (max-width:600px){.k .v{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <a class="back" id="back" href="#" hidden>&larr; All branches</a>
+      <h1 id="title">Branches KPI</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="sub" id="upd"></div>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="filters">
+    <label>From<input type="date" id="from"></label>
+    <label>To<input type="date" id="to"></label>
+    <div class="spacer"></div>
+    <button id="export">Export to Excel</button>
+    <button class="primary" id="refresh">Refresh</button>
+  </div>
+
+  <div id="app"></div>
+  <div class="foot"><span>Auto-refreshes every minute</span><span>Target is prorated by the days selected</span></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let DATA = null, DEMO = false, F = {from:null,to:null}, SORT = null, DK = null;
+
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const KPIS = () => DATA.kpis;
+const dim = () => { const [y,m] = DATA.month.split('-').map(Number); return new Date(y,m,0).getDate(); };
+const allDates = () => [...new Set(DATA.branches.flatMap(b => Object.keys(b.daily)))].sort();
+const cls = p => p >= 1 ? 'g' : p >= .85 ? 'w' : 'b';
+
+/* ---------- data ---------- */
+async function load(){
+  try{
+    const r = await fetch('data.json?t=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw 0;
+    DATA = await r.json(); DEMO = false;
+  }catch(e){ DATA = demoData(); DEMO = true; }
+  const ds = allDates();
+  if(!F.from || F.from < ds[0] || F.from > ds[ds.length-1]) F.from = ds[0];
+  if(!F.to || F.to > ds[ds.length-1] || F.to < ds[0]) F.to = ds[ds.length-1];
+  if(!DK) DK = KPIS()[0].key;
+  render();
+}
+
+function demoData(){
+  let s = 11; const rnd = () => (s = (s*16807) % 2147483647) / 2147483647;
+  const names = [["7811","المباهج"],["7660","المنتصر"],["4078","الوارف"],["4087","أفينيو"],["7760","البروج"]];
+  const base = {sales:520000, smartlist:32000, wc:26000, ndf:900};
+  return {updated:new Date().toISOString(), month:'2026-11',
+    kpis:[{key:'sales',label:'Sales Revenue',fmt:'money'},{key:'smartlist',label:'Smartlist Revenue',fmt:'money'},{key:'wc',label:'Wellness Cards Revenue',fmt:'money'},{key:'ndf',label:'NDF Units',fmt:'units'}],
+    branches:names.map(([id,name])=>{
+      const sc = .7 + rnd()*.6, t = {}, daily = {};
+      for(const k in base) t[k] = Math.round(base[k]*sc/10)*10;
+      for(let d=1; d<=6; d++){ const o = {}; for(const k in t) o[k] = Math.round(t[k]/30*(.8+rnd()*.4)*(.85+rnd()*.25)); daily['2026-11-0'+d] = o; }
+      return {id,name,targets:t,daily};
+    })};
+}
+
+/* ---------- calculations ---------- */
+function range(){ return allDates().filter(d => d >= F.from && d <= F.to); }
+function calc(b, dates){
+  const o = {};
+  for(const k of KPIS()){
+    let sum = 0; for(const d of dates) sum += (b.daily[d] && b.daily[d][k.key]) || 0;
+    const tg = (b.targets[k.key] || 0) * dates.length / dim();
+    o[k.key] = {sum, target:tg, pct: tg ? sum/tg : 0};
+  }
+  return o;
+}
+function total(dates){
+  const o = {};
+  for(const k of KPIS()){
+    let sum = 0, tg = 0;
+    for(const b of DATA.branches){ const c = calc(b, dates)[k.key]; sum += c.sum; tg += c.target; }
+    o[k.key] = {sum, target:tg, pct: tg ? sum/tg : 0};
+  }
+  return o;
+}
+
+/* ---------- views ---------- */
+function strip(c){
+  return `<div class="strip">` + KPIS().map(k => {
+    const x = c[k.key];
+    return `<div class="k"><div class="l">${k.label}</div><div class="v">${fmt(x.sum)}</div>
+      <div class="p ${cls(x.pct)}">${Math.round(x.pct*100)}% of target (${fmt(x.target)})</div></div>`;
+  }).join('') + `</div>`;
+}
+
+function overview(dates){
+  const rows = DATA.branches.map(b => ({b, c: calc(b, dates)}));
+  if(SORT) rows.sort((a,z) => z.c[SORT].pct - a.c[SORT].pct);
+  const head = KPIS().map(k => `<th><button data-sort="${k.key}" title="Sort by % of target">${k.label}${SORT===k.key?' ▾':''}</button></th>`).join('');
+  const body = rows.map(({b,c}) => `<tr class="row" tabindex="0" data-id="${b.id}">
+    <td class="name"><span dir="auto">${b.name}</span><small>${b.id}</small></td>
+    ${KPIS().map(k => { const x = c[k.key], p = cls(x.pct);
+      return `<td><div class="cell"><div class="n">${fmt(x.sum)}</div>
+      <div class="pc ${p}">${Math.round(x.pct*100)}%</div>
+      <div class="bar"><i class="bg-${p}" style="width:${Math.min(100,x.pct*100)}%"></i></div></div></td>`; }).join('')}
+  </tr>`).join('');
+  return strip(total(dates)) + `<div class="tbl"><table><thead><tr><th>Branch</th>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function chart(b, dates, k){
+  const W = 720, H = 240, L = 48, R = 12, T = 12, B = 28;
+  const vals = dates.map(d => (b.daily[d] && b.daily[d][k.key]) || 0);
+  const tgt = (b.targets[k.key] || 0) / dim();
+  const max = Math.max(...vals, tgt, 1) * 1.15;
+  const x = i => L + (dates.length < 2 ? (W-L-R)/2 : i*(W-L-R)/(dates.length-1));
+  const y = v => T + (H-T-B) * (1 - v/max);
+  const grid = [0,.5,1].map(f => { const v = max*f/1.15; return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${fmt(v)}</text>`; }).join('');
+  const path = vals.map((v,i) => (i?'L':'M') + x(i) + ' ' + y(v)).join(' ');
+  const dots = vals.map((v,i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="var(--brand)"><title>${dates[i]}: ${fmt(v)}</title></circle>`).join('');
+  const step = Math.ceil(dates.length/8);
+  const xl = dates.map((d,i) => i%step===0 ? `<text x="${x(i)}" y="${H-8}" text-anchor="middle">${d.slice(8)}</text>` : '').join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily ${k.label}">${grid}
+    <line x1="${L}" x2="${W-R}" y1="${y(tgt)}" y2="${y(tgt)}" stroke="var(--warn)" stroke-dasharray="5 4"/>
+    <path d="${path}" fill="none" stroke="var(--brand)" stroke-width="2.5"/>${dots}${xl}</svg>
+    <div class="legend">Solid: daily actual · Dashed: daily target (${fmt(tgt)})</div>`;
+}
+
+function detail(id, dates){
+  const b = DATA.branches.find(z => z.id === id);
+  if(!b) return `<div class="panel">Branch not found.</div>`;
+  const k = KPIS().find(z => z.key === DK) || KPIS()[0];
+  const tabs = KPIS().map(z => `<button data-kpi="${z.key}" aria-pressed="${z.key===k.key}">${z.label}</button>`).join('');
+  const ths = KPIS().map(z => `<th>${z.label}</th>`).join('');
+  const trs = [...dates].reverse().map(d => `<tr><td>${d}</td>${KPIS().map(z => `<td class="num">${fmt((b.daily[d]&&b.daily[d][z.key])||0)}</td>`).join('')}</tr>`).join('');
+  return strip(calc(b, dates)) +
+    `<div class="panel"><h2>Daily trend</h2><div class="tabs">${tabs}</div>${chart(b, dates, k)}</div>
+     <div class="tbl"><table><thead><tr><th>Date</th>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+}
+
+function render(){
+  const id = location.hash.slice(1), dates = range();
+  $('#from').value = F.from; $('#to').value = F.to;
+  $('#from').min = $('#to').min = allDates()[0]; $('#from').max = $('#to').max = allDates().slice(-1)[0];
+  $('#banner').innerHTML = DEMO ? `<div class="banner">Showing demo data. <b>data.json</b> was not found next to this page.</div>` : '';
+  const u = new Date(DATA.updated);
+  $('#upd').textContent = isNaN(u) ? '' : 'Updated ' + u.toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'});
+  const b = id && DATA.branches.find(z => z.id === id);
+  $('#back').hidden = !b;
+  $('#title').textContent = b ? b.name + ' · ' + b.id : 'Branches KPI';
+  $('#sub').textContent = DATA.month + ' · ' + dates.length + ' day(s) selected';
+  $('#app').innerHTML = b ? detail(id, dates) : overview(dates);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  if(t.closest('[data-sort]')){ SORT = SORT === t.closest('[data-sort]').dataset.sort ? null : t.closest('[data-sort]').dataset.sort; render(); return; }
+  if(t.closest('[data-kpi]')){ DK = t.closest('[data-kpi]').dataset.kpi; render(); return; }
+  const r = t.closest('tr.row'); if(r) location.hash = r.dataset.id;
+});
+document.addEventListener('keydown', e => { if(e.key === 'Enter'){ const r = e.target.closest && e.target.closest('tr.row'); if(r) location.hash = r.dataset.id; } });
+$('#from').onchange = e => { F.from = e.target.value; render(); };
+$('#to').onchange = e => { F.to = e.target.value; render(); };
+$('#refresh').onclick = load;
+window.addEventListener('hashchange', render);
+
+$('#export').onclick = () => {
+  const dates = range(), id = location.hash.slice(1), b = DATA.branches.find(z => z.id === id);
+  let rows;
+  if(b){
+    rows = [['Date', ...KPIS().map(k => k.label)], ...dates.map(d => [d, ...KPIS().map(k => (b.daily[d] && b.daily[d][k.key]) || 0)])];
+  }else{
+    rows = [['Branch ID','Branch', ...KPIS().flatMap(k => [k.label, k.label + ' Target', k.label + ' %'])]];
+    for(const x of DATA.branches){ const c = calc(x, dates);
+      rows.push([x.id, x.name, ...KPIS().flatMap(k => [Math.round(c[k.key].sum), Math.round(c[k.key].target), Math.round(c[k.key].pct*100)])]); }
+  }
+  const csv = '\ufeff' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = (b ? 'branch-' + b.id : 'branches') + '-' + F.from + '_' + F.to + '.csv';
+  a.click();
+};
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
